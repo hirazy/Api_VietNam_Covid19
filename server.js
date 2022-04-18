@@ -3,8 +3,6 @@ const mySQL = require('mysql')
 const schedule = require('node-schedule')
 const express = require('express')
 
-
-
 const host = process.env.host
 
 // const axios = require('axios')
@@ -63,7 +61,7 @@ const urlSource = 'https://covid19.gov.vn/'
 
 async function getdatavn() {
 
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
+    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
     const page = await browser.newPage()
     await page.goto(url, { waitUntil: 'networkidle2' })
 
