@@ -61,7 +61,7 @@ const urlSource = 'https://covid19.gov.vn/'
 
 async function getdatavn() {
 
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
     const page = await browser.newPage()
     await page.goto(url, { waitUntil: 'networkidle2' })
 
