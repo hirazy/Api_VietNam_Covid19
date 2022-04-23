@@ -1,3 +1,4 @@
+const cheerio = require('cheerio');
 const puppeteer = require('puppeteer')
 const mySQL = require('mysql')
 const schedule = require('node-schedule')
@@ -9,13 +10,13 @@ const host = process.env.host
 
 // // const {jsdom} = require('jsdom')
 
-// const { JSDOM } = require('jsdom')
-// const db = mySQL.createConnection({
-//     host: 'localhost',
-//     user: 'zvesrhus_hirazy',
-//     password: 'a01649129388@',
-//     database: 'api-covid-19'
-// })
+const { JSDOM } = require('jsdom')
+    // const db = mySQL.createConnection({
+    //     host: 'localhost',
+    //     user: 'zvesrhus_hirazy',
+    //     password: 'a01649129388@',
+    //     database: 'api-covid-19'
+    // })
 
 // db.connect((err) => {
 //     if (err) {
@@ -61,73 +62,108 @@ const urlSource = 'https://covid19.gov.vn/'
 
 async function getdatavn() {
 
+    // got(url).then(response => {
+    //     const dom = new JSDOM(response.body);
+    //     console.log(dom.window.document.querySelector('title').textContent);
+    // }).catch(err => {
+    //     console.log(err);
+    // });
+
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
     const page = await browser.newPage()
-    await page.goto(url, { waitUntil: 'networkidle2' })
+    await page.goto(urlSource, { waitUntil: 'networkidle2' })
 
-    let nhiem = await page.evaluate(() => {
-        return document.querySelector('div.block-data-vietnam > div.block-count-vietnam > div.item-nhiem').innerText
-    })
-    nhiem = nhiem.split('\n')
-    nhiem.shift()
+    await sleep(2000)
 
-    let khoi = await page.evaluate(() => {
-        return document.querySelector('div.block-data-vietnam > div.block-count-vietnam > div.item-khoi').innerText
-    })
-    khoi = khoi.split('\n')
-    khoi.shift()
+    const textContentPage = await page.content()
 
-    let tuvong = await page.evaluate(() => {
-        return document.querySelector('div.block-data-vietnam > div.block-count-vietnam > div.item-tuvong').innerText
-    })
-    tuvong = tuvong.split('\n')
-    tuvong.shift()
-
-    let capnhat = await page.evaluate(() => {
-        return document.querySelector('div.container > div.red.center.mb20').innerText
-    })
-    capnhat = capnhat.slice(32).trim()
-
-    const tong = { nhiem: nhiem[0], khoi: khoi[0], tuvong: tuvong[0] }
-    const homnay = { nhiem: nhiem[1].slice(17), khoi: khoi[1].slice(17), tuvong: tuvong[1].slice(17) }
-    const covid = {
-        'CovidVN': {
-            'CapNhat': capnhat,
-            'Tong': tong,
-            'HomNay': homnay
-        }
-    }
-
-    await page.click('div[class="btn-load btn-load--tinhthanh"] > a[class="xem-them"]')
-
-    // const provinceItems = await page.evaluate(() => {
-    //     const tds = Array.from(document.querySelectorAll('ul[class="list-tinhthanh"] > li'))
-    //     return tds.map(td => td.textContent)
-    // });
-    const provinceItems = await page.$$('ul[class="list-tinhthanh"] li')
+    console.log(textContentPage)
 
     let provinces = []
 
-    console.log(provinceItems.length)
+    const dom = new JSDOM(textContentPage).window.document
 
-    for (const item of provinceItems) {
+    const monthItems = dom.querySelector('tbody')
+    const monthItemsList = monthItems.querySelectorAll('div')
+    console.log(`Length ${monthItemsList.length}`)
 
-        const city = await item.$eval('div:nth-child(1)', element => element.textContent)
-        const total = await item.$eval('div:nth-child(2)', element => element.textContent)
-        const daynow = await item.$eval('div:nth-child(3) > strong', element => element.textContent)
-        const die = await item.$eval('div:nth-child(5)', element => element.textContent)
+    let earningLists = []
 
-        provinces.push({
-            city: city,
-            total: total,
-            daynow: daynow,
-            die: die
-        })
+    for (let i = 0; i < monthItemsList.length; i++) {
+        const item = monthItemsList[i]
+        const cityEle = item.querySelector(`.city`).textContent
+        console.log(cityEle)
     }
+
+
+    // let nhiem = await page.evaluate(() => {
+    //     return document.querySelector('div.block-data-vietnam > div.block-count-vietnam > div.item-nhiem').innerText
+    // })
+    // nhiem = nhiem.split('\n')
+    // nhiem.shift()
+
+    // let khoi = await page.evaluate(() => {
+    //     return document.querySelector('div.block-data-vietnam > div.block-count-vietnam > div.item-khoi').innerText
+    // })
+    // khoi = khoi.split('\n')
+    // khoi.shift()
+
+    // let tuvong = await page.evaluate(() => {
+    //     return document.querySelector('div.block-data-vietnam > div.block-count-vietnam > div.item-tuvong').innerText
+    // })
+    // tuvong = tuvong.split('\n')
+    // tuvong.shift()
+
+    // let capnhat = await page.evaluate(() => {
+    //     return document.querySelector('div.container > div.red.center.mb20').innerText
+    // })
+    // capnhat = capnhat.slice(32).trim()
+
+    // const tong = { nhiem: nhiem[0], khoi: khoi[0], tuvong: tuvong[0] }
+    // const homnay = { nhiem: nhiem[1].slice(17), khoi: khoi[1].slice(17), tuvong: tuvong[1].slice(17) }
+    // const covid = {
+    //     'CovidVN': {
+    //         'CapNhat': capnhat,
+    //         'Tong': tong,
+    //         'HomNay': homnay
+    //     }
+    // }
+
+    // await page.click('div[class="btn-load btn-load--tinhthanh"] > a[class="xem-them"]')
+
+    // // const provinceItems = await page.evaluate(() => {
+    // //     const tds = Array.from(document.querySelectorAll('ul[class="list-tinhthanh"] > li'))
+    // //     return tds.map(td => td.textContent)
+    // // });
+    // const provinceItems = await page.$$('ul[class="list-tinhthanh"] li')
+
+    // let provinces = []
+
+    // console.log(provinceItems.length)
+
+    // for (const item of provinceItems) {
+
+    //     const city = await item.$eval('div:nth-child(1)', element => element.textContent)
+    //     const total = await item.$eval('div:nth-child(2)', element => element.textContent)
+    //     const daynow = await item.$eval('div:nth-child(3) > strong', element => element.textContent)
+    //     const die = await item.$eval('div:nth-child(5)', element => element.textContent)
+
+    //     provinces.push({
+    //         city: city,
+    //         total: total,
+    //         daynow: daynow,
+    //         die: die
+    //     })
+    // }
 
     await browser.close()
 
     return provinces
+}
+
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 
