@@ -1,5 +1,5 @@
-# Api_VietName_Covid19
-Api_VietName_Covid19
+# Api_VietNam_Covid19
+Api_VietNam_Covid19
 
 How to use:
 
