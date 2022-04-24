@@ -69,30 +69,78 @@ async function getdatavn() {
     //     console.log(err);
     // });
 
+    // const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+    // const page = await browser.newPage()
+    // await page.goto(urlSource, { waitUntil: 'networkidle2' })
+
+    // await page.setDefaultNavigationTimeout(60000);
+
+    // while (true) {
+    //     await sleep(1000)
+    //     if (await page.$('div[class="tbody"]') != null) {
+    //         break;
+    //     }
+    // }
+
+    // const textContentPage = await page.content()
+
+    // console.log(textContentPage)
+
+    // let provinces = []
+
+    // const dom = new JSDOM(textContentPage).window.document
+
+    // const monthItems = dom.querySelector('.tbody')
+    // const monthItemsList = monthItems.querySelectorAll('.row')
+    // console.log(`Length ${monthItemsList.length}`)
+
+    // let earningLists = []
+
+    // for (let i = 0; i < monthItemsList.length; i++) {
+    //     const item = monthItemsList[i]
+    //     const cityEle = item.querySelector(`.city`).textContent
+    //     console.log(cityEle)
+    // }
+
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
     const page = await browser.newPage()
-    await page.goto(urlSource, { waitUntil: 'networkidle2' })
+    await page.goto(url, { waitUntil: 'networkidle2' })
 
-    await sleep(2000)
+    await page.setDefaultNavigationTimeout(60000);
+
+    while (true) {
+        await sleep(1000)
+        if (await page.$('ul[class="list-tinhthanh"] > li') != null) {
+            break;
+        }
+    }
 
     const textContentPage = await page.content()
-
-    console.log(textContentPage)
 
     let provinces = []
 
     const dom = new JSDOM(textContentPage).window.document
 
-    const monthItems = dom.querySelector('tbody')
-    const monthItemsList = monthItems.querySelectorAll('div')
-    console.log(`Length ${monthItemsList.length}`)
+    const provinceItemsSelector = dom.querySelector('#list-tinhthanh')
+    const provinceItems = provinceItemsSelector.querySelectorAll('li')
+    console.log(`Length ${provinceItems.length}`)
 
-    let earningLists = []
+    for (let i = 0; i < provinceItems.length; i++) {
+        const item = provinceItems[i]
 
-    for (let i = 0; i < monthItemsList.length; i++) {
-        const item = monthItemsList[i]
-        const cityEle = item.querySelector(`.city`).textContent
-        console.log(cityEle)
+        const newInfections = item.getAttribute('data-score')
+        const province = item.querySelector('div:nth-child(1)').textContent
+        const allInfections = item.querySelector('div:nth-child(2)').textContent
+        const death = item.querySelector('div:nth-child(5)').textContent
+
+        const provinceItem = {
+            name: province,
+            death: death,
+            cases: allInfections,
+            casesToday: newInfections
+        }
+
+        provinces.push(provinceItem)
     }
 
 
